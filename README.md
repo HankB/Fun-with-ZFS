@@ -10,6 +10,6 @@ Some operations that should be simple and straightforward have not been so simpl
 
 Nothing checked in yet.
 
-## Contrinbuting
+## Contributing
 
 I'd be delighted to have additional scenarios added. I reserve the right to add requirements to PRs as I identify the need. I'll need to research what to do about copyright for projects of this type.
