@@ -17,3 +17,8 @@ Not really. Scripts are checked using `shellcheck` to provide a minimal level of
 ## Contributing
 
 I'd be delighted to have additional scenarios added. I reserve the right to add requirements to PRs as I identify the need. I'll need to research what to do about copyright for projects of this type.
+
+## Errata
+
+Testing is performed on hosts running Debian Buster (ZFS 0.8.5) and Debian Stretch (ZFS 0.7.12) using `bash`.
+
