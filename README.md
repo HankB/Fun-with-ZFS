@@ -8,7 +8,11 @@ Some operations that should be simple and straightforward have not been so simpl
 
 ## Status
 
-Nothing checked in yet.
+First script complete. More to come.
+
+## Testing
+
+Not really. Scripts are checked using `shellcheck` to provide a minimal level of error checking.
 
 ## Contributing
 
