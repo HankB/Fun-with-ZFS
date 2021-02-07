@@ -9,9 +9,19 @@ e.g. not incremental. Sending an entire filesystem or pool to another filesystem
 
 ## Requirements
 
-* Sufficient rights on the host system to create, manipulate and destroy filesystems. May require `root`/`sudo`.
+* Sufficient rights on the host system to create, manipulate and destroy pools. Requires `root`/`sudo`.
 * Sufficient disk space to create files to be used for filesystems.
+* `tree` command to display file hierarchies.
+* `zfs send` command uses `-w` flag availble in ZFS 0.8.0 and later.
+* 128 MiB free disk space to create files used for pools.
 
 ## Status
 
-Script developed, needs cleanup and add to the project.
+Working as desired.
+
+## Usage
+
+1. CD to a convenient directory.
+1. `sudo` and copy/paste the appropriate lines of the script imnto the console.
+1. Or run the script within a root shell. (e.g. `sudo ./bulk-xfer`)
+1. Enjoy!
