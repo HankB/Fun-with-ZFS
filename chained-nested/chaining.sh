@@ -22,7 +22,7 @@ do
     sudo zpool create -m "$starting_point/${i}" "${i}" \
         "$starting_point/fakedisk_${i}"
     # delegate to user some operations
-    sudo zfs allow -u ${USER} \
+    sudo zfs allow -u "${USER}" \
         compression,create,destroy,hold,mount,mountpoint,receive,send,snapshot \
         ${i}
     # Make filesystem mount points world writable/executable
