@@ -49,7 +49,7 @@ echo "open shell to examine results so far (exit or <ctrl>D to proceed)"
 
 # Solution suggested by comrade meowski
 # zfs send -vRw oldtank@bulk_xfer | zfs recv -eu -o mountpoint=none tank
-zfs send -vRw source@second | zfs recv -eu -o mountpoint=none destination # mapped to test pools/filesystems
+zfs send -Rw source@second | zfs recv -duF -o mountpoint=none destination # mapped to test pools/filesystems
 zfs list -r destination
 zfs list -r destination -t snap
 
