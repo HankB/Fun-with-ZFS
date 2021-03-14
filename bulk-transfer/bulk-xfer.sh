@@ -11,8 +11,8 @@ truncate -s 64MiB ./fakedisk_source
 truncate -s 64MiB ./fakedisk_destination
 
 # create pools using these devices
-zpool create source "$starting_point"/fakedisk_source
-zpool create destination "$starting_point"/fakedisk_destination
+zpool create -m "$starting_point/source" source "$starting_point/fakedisk_source"
+zpool create -m "$starting_point/destination" destination "$starting_point/fakedisk_destination"
 
 # create filesystems on source pool
 zfs create source/source
@@ -24,7 +24,7 @@ echo "open shell to examine results so far (exit or <ctrl>D to proceed)"
 /usr/bin/env bash
 
 # and populate with some files
-cd /source/source
+cd source/source
 dd bs=1M seek=1 of=source-source count=0
 cd baz
 dd bs=1M seek=1 of=source-source-baz count=0
@@ -34,10 +34,11 @@ tree ../..
 
 # snapshot and create another file
 zfs snap -r source@first
-cd ../../foo
+cd "$starting_point/source/source/foo"
 dd bs=1M seek=1 of=source-source-foo count=0
+cd "$starting_point"
 zfs snap -r source@second
-ls -lR /source
+tree source
 zfs list -t snap -r source
 
 echo "open shell to examine results so far (exit or <ctrl>D to proceed)"
@@ -54,8 +55,8 @@ zfs list -r destination -t snap
 
 # set mountpoint so we can see the results in destination
 # (Will be inherited by child filesystems.)
-zfs set mountpoint=/destination/source destination/source
-tree /source /destination
+zfs set mountpoint="$starting_point/destination/source" destination/source
+tree source destination
 
 echo "open shell to examine results so far (exit or <ctrl>D to proceed)"
 /usr/bin/env bash
@@ -66,3 +67,4 @@ zpool destroy -f source
 zpool destroy -f destination
 
 rm ./fakedisk_source ./fakedisk_destination
+rm -r destination source
