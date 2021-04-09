@@ -25,75 +25,67 @@ sudo zfs allow -u ${USER} \
     "$POOL"
 # No attemmpt is made to minimize delegated capabilities 
 
-zfs snap "$POOL"@created
+# create a filesystem
+sudo zfs create "$POOL"/f
+sudo chown ${USER}.${USER} "$MNT_POINT"/f
+
+zfs snap -r "$POOL"@created
 
 echo send empty filesystem
 zfs send -n -P "$POOL"@created
 
-# create some filesystems
-sudo zfs create "$POOL"/f
-sudo zfs create "$POOL"/f/foo
-sudo zfs create "$POOL"/f/baz
-sudo zfs create "$POOL"/f/baz/bar
-sudo chown -R ${USER}.${USER} "$MNT_POINT/f"
-
-zfs snap -r "$POOL"@add-filesystems
-
-echo 
-echo send filesystems created
-zfs send -n -P "$POOL"@add-filesystems
-echo 
-echo send/incremental filesystems created
-zfs send -n -P -i "$POOL"@created "$POOL"@add-filesystems
-
-# and populate with some files, random date
+# populate with some files, random data
 cd "${MNT_POINT}/f"
-dd bs=1M  if=/dev/urandom of="$POOL-f" count=1 2>/dev/null
-cd baz
-dd bs=1M  if=/dev/urandom of="$POOL-f-baz" count=1 2>/dev/null
-cd bar
-dd bs=1M  if=/dev/urandom of="$POOL-f-baz-bar" count=1 2>/dev/null
-tree ../..
+pwd
+dd bs=1M  if=/dev/urandom of="$POOL-f-1" count=1 
+dd bs=1M  if=/dev/urandom of="$POOL-f-2" count=1 2>/dev/null
+dd bs=1M  if=/dev/urandom of="$POOL-f-3" count=1 2>/dev/null
+ls -l
 
 zfs snap -r "$POOL"@populated
 
 echo 
 echo send filesystems populated
 zfs send -R -n -P "$POOL"@populated
-zfs send -R -n -v "$POOL"@populated
 echo 
 echo send/incremental filesystems populated
-zfs send -n -P -i "$POOL"@add-filesystems "$POOL"@populated
-zfs send -n -v -i "$POOL"@add-filesystems "$POOL"@populated
+zfs send -R -n -P -i "$POOL"@created "$POOL"@populated
 
-exit
+# hard link one file
 
+echo
+echo hard linking  "$POOL-f-1" "$POOL-f-2"
+ln -f "$POOL-f-1" "$POOL-f-2"
+ls -l 
+zfs snap -r "$POOL"@hard-link
+echo send filesystems populated
+zfs send -R -n -P "$POOL"@hard-link
+echo 
+echo send/incremental filesystems hard-link
+zfs send -R -n -P -i "$POOL"@created "$POOL"@hard-link
+echo send/incremental filesystems populated to hard-link
+zfs send -R -n -P -i "$POOL"@populated "$POOL"@hard-link
 
-# snapshot and create another file
-zfs snap -r source@first
-cd ../../foo
-dd bs=1M seek=1 of=source-source-foo count=0
-zfs snap -r source@second
-ls -lR /source
-zfs list -t snap -r source
-
-echo "open shell to examine results so far (exit or <ctrl>D to proceed)"
-/usr/bin/env bash
-
-# Attempt to transfer the contents of source to destination.
-# zfs send -R source@second|zfs receive -d destination # fails because filesystem destination exists
-
-# Solution suggested by comrade meowski
-# zfs send -vRw oldtank@bulk_xfer | zfs recv -eu -o mountpoint=none tank
-zfs send -vRw source@second | zfs recv -eu -o mountpoint=none destination # mapped to test pools/filesystems
-zfs list -r destination
-zfs list -r destination -t snap
+# move file 
+echo 
+echo "moving a file to a subdir"
+mkdir sub
+mv "$POOL-f-3" sub/
+zfs snap -r "$POOL"@move
+echo send filesystems move
+zfs send -R -n -P "$POOL"@move
+echo 
+echo send/incremental filesystems move
+zfs send -R -n -P -i "$POOL"@created "$POOL"@move
+echo 
+echo send/incremental filesystems hard-link to move
+zfs send -R -n -P -i "$POOL"@hard-link "$POOL"@move
 
 echo "open shell to examine results so far (exit or <ctrl>D to proceed)"
 /usr/bin/env bash
 
 # cleanup
-cd "$starting_point"
-sudo zpool destroy fakedisk
-rm "$FAKEDISK"
+cd "$STARTING_POINT"
+sudo zpool destroy "$POOL"
+sudo rm -rf "$FAKEDISK" "$MNT_POINT"
 
