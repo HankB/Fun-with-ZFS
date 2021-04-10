@@ -42,3 +42,10 @@ zfs snap "${SNAPSHOT}"
 
 # copy the dat
 sudo zfs send "${SNAPSHOT}" | mbuffer | sudo zfs receive -F "$DESTINATION"
+
+# mbuffer outputs some statistics including size, elapsed time
+# and bandwidth (along with buffer usage.)
+
+zfs get compressratio "$SOURCE" "$DESTINATION"
+
+echo "cleanup: sudo zfs destroy -r \"$DESTINATION\""
