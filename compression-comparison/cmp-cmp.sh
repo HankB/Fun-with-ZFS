@@ -30,14 +30,16 @@ else
     readonly DESTINATION=$3
 fi
 
-echo $COMPRESSION $SOURCE $DESTINATION
+echo "compression:$COMPRESSION source filesystem:$SOURCE destination filesystem:$DESTINATION"
+
+# name the snapshot
+readonly SNAPSHOT=${SOURCE}@test-$(date +%Y-%m-%d-%H:%M:%S)
 
 # Create the destination filesystem
-sudo zfs create -o canmount=off -o mountpoint=none \
+sudo zfs create -o canmount=on \
     -o compression="$COMPRESSION" "$DESTINATION"
 
 # snapshot the pool
-readonly SNAPSHOT=${SOURCE}@test-$(date +%Y-%m-%d-%H:%M:%S)
 zfs snap "${SNAPSHOT}"
 
 # copy the dat

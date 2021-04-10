@@ -18,17 +18,26 @@ Other settings for filesystem creation will be set to what is used for [Debian B
 zfs create -o canmount=off -o mountpoint=none rpool/ROOT
 ```
 
-And in the case of this script
+And in the case of this script canmount is now left on.
 
 ```text
-zfs create -o canmount=off -o mountpoint=none \
-    -o compression=ARG1 ARG3|ARG2_test
+zfs create  -o mountpoint=/mnt/poolname/filesystem \
+    -o compression=ARG1 [ARG3|ARG2_test]
 ```
+
+## Requirements
+
+* `sudo`
+* a pool created with mountable options
+
+## Cleanup
+
+This is a little problematic. The script can emit the command which can be used to destroy the filesystem. That may leave behind the directories where it was mounted and thoe locations may depend on properties with which the pool was created and are beyond this project.
 
 ## Status
 
 First attempt working with no cleanup.
 
-* Parhaps look for user supplied `benchmark.sh` to run benchmarks automatically.
+* Perhaps look for user supplied `benchmark.sh` to run benchmarks automatically.
 * Probably need to mount destination dataset in order to run benchmarks.
 * Could output a script (or echo a command) that would perform cleanup.
