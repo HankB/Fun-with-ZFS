@@ -15,4 +15,4 @@ For the purpose of demonstration, the files will be compressed (`gzip`) rather t
 
 ## 2024-09-26 Status
 
-Files date to May of this year. Not sure if this is complete but starting on another task so I'll commit/push as is.
+Files date to May of this year. Not sure if this is complete but starting on another task so I'll commit/push as is. Not `shellcheck` clean.
