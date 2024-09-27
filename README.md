@@ -2,6 +2,10 @@
 
 Explore simple ZFS operations
 
+## Note
+
+On 2024-09-26 I accidentally committed and pushed two test files. I followed a circuitous sequence of commands (<https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/removing-sensitive-data-from-a-repository#using-git-filter-repo>) to remove them and the result is that I could no longer pull/push from an existing repo. Fun with Git!
+
 ## Motivation
 
 Some operations that should be simple and straightforward have not been so simple for me. I found it convenient to set up some simple scripts to work through the operations and allow me to explore the results and try different options. The plan is that each subdirectory will include one or more scripts related to a particular operation or scenario along with a README with appropriate comments.
