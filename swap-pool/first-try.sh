@@ -39,13 +39,27 @@ done
 #   Q: Why does this require root?
 #   A: Only root cam mount a filesystem.
 sudo zfs create A/a
-sudo chown "${user}.${user}" A/a
+sudo chown "${user}:${user}" A/a
 
 # and populate with some files
 cd "$starting_point"/A/a
 dd bs=1M seek=1 of=somefile count=0
 
-exit
+# populate normal backup stream
+syncoid -r A/a B/a
+sleep 1
+syncoid -r B/a C/a
+
+# clone B to Bp
+syncoid -r B/a Bp/a
+
+zfs list -t snap -r A B Bp C 
+
+# Can we now sync Bp to C
+sleep 1
+syncoid -r Bp/a C/a
+# Yes! Incremental backup succeeded.
+zfs list -t snap -r C 
 
 # cleanup
 cd "$starting_point"
