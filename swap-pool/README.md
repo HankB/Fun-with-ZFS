@@ -29,7 +29,9 @@ Working. First try using `syncoid` worked as desired. Note that since no flags w
 
 Working example does w/out the rename of pool `Bp` and just performs the send, demonstrating that since it includes the snapshot from the copy from `B` to `C`, the send is incremental (and this is the desired result.)
 
-### trace of working execution
+### Repeat complete backup chain A -> Bp -> C
+
+This results in
 
 ```text
 hbarta@mars:~/Programming/Fun-with-ZFS/swap-pool $ ./first-try.sh 
@@ -65,38 +67,58 @@ hbarta@mars:~/Programming/Fun-with-ZFS/swap-pool $ ./first-try.sh
 + dd bs=1M seek=1 of=somefile count=0
 0+0 records in
 0+0 records out
-0 bytes copied, 0.000101944 s, 0.0 kB/s
+0 bytes copied, 0.000128963 s, 0.0 kB/s
 + syncoid -r A/a B/a
-INFO: Sending oldest full snapshot A/a@syncoid_mars_2024-10-01:15:18:37-GMT-05:00 (~ 12 KB) to new target filesystem:
-45.3KiB 0:00:00 [2.70MiB/s] [===================================================================================================] 359%            
+INFO: Sending oldest full snapshot A/a@syncoid_mars_2024-10-02:10:47:40-GMT-05:00 (~ 12 KB) to new target filesystem:
+45.3KiB 0:00:00 [2.82MiB/s] [===================================================================================================] 359%            
 + sleep 1
-+ syncoid -r B/a C/a
-INFO: Sending oldest full snapshot B/a@syncoid_mars_2024-10-01:15:18:37-GMT-05:00 (~ 12 KB) to new target filesystem:
-45.3KiB 0:00:00 [2.60MiB/s] [===================================================================================================] 359%            
-INFO: Updating new target filesystem with incremental B/a@syncoid_mars_2024-10-01:15:18:37-GMT-05:00 ... syncoid_mars_2024-10-01:15:18:38-GMT-05:00 (~ 7 KB):
-6.27KiB 0:00:00 [ 184KiB/s] [=======================================================================================>            ] 88%            
++ syncoid -r --keep-sync-snap B/a C/a
+INFO: Sending oldest full snapshot B/a@syncoid_mars_2024-10-02:10:47:40-GMT-05:00 (~ 12 KB) to new target filesystem:
+45.3KiB 0:00:00 [2.76MiB/s] [===================================================================================================] 359%            
+INFO: Updating new target filesystem with incremental B/a@syncoid_mars_2024-10-02:10:47:40-GMT-05:00 ... syncoid_mars_2024-10-02:10:47:42-GMT-05:00 (~ 7 KB):
+6.27KiB 0:00:00 [ 191KiB/s] [=======================================================================================>            ] 88%            
 + sleep 1
 + syncoid -r B/a Bp/a
-INFO: Sending oldest full snapshot B/a@syncoid_mars_2024-10-01:15:18:38-GMT-05:00 (~ 12 KB) to new target filesystem:
-45.3KiB 0:00:00 [2.68MiB/s] [===================================================================================================] 359%            
-INFO: Updating new target filesystem with incremental B/a@syncoid_mars_2024-10-01:15:18:38-GMT-05:00 ... syncoid_mars_2024-10-01:15:18:40-GMT-05:00 (~ 4 KB):
-1.52KiB 0:00:00 [47.8KiB/s] [=====================================>                                                              ] 38%            
+INFO: Sending oldest full snapshot B/a@syncoid_mars_2024-10-02:10:47:40-GMT-05:00 (~ 12 KB) to new target filesystem:
+45.3KiB 0:00:00 [2.73MiB/s] [===================================================================================================] 359%            
+INFO: Updating new target filesystem with incremental B/a@syncoid_mars_2024-10-02:10:47:40-GMT-05:00 ... syncoid_mars_2024-10-02:10:47:43-GMT-05:00 (~ 7 KB):
+6.88KiB 0:00:00 [ 198KiB/s] [========================================================================================>           ] 89%            
 + sleep 1
 + zfs list -t snap -r A B Bp C
 NAME                                              USED  AVAIL  REFER  MOUNTPOINT
-A/a@syncoid_mars_2024-10-01:15:18:37-GMT-05:00      0B      -    24K  -
-B/a@syncoid_mars_2024-10-01:15:18:40-GMT-05:00      0B      -    24K  -
-Bp/a@syncoid_mars_2024-10-01:15:18:38-GMT-05:00     0B      -    24K  -
-Bp/a@syncoid_mars_2024-10-01:15:18:40-GMT-05:00     0B      -    24K  -
-C/a@syncoid_mars_2024-10-01:15:18:37-GMT-05:00     13K      -    24K  -
-C/a@syncoid_mars_2024-10-01:15:18:38-GMT-05:00      0B      -    24K  -
+A/a@syncoid_mars_2024-10-02:10:47:40-GMT-05:00      0B      -    24K  -
+B/a@syncoid_mars_2024-10-02:10:47:43-GMT-05:00      0B      -    24K  -
+Bp/a@syncoid_mars_2024-10-02:10:47:40-GMT-05:00    13K      -    24K  -
+Bp/a@syncoid_mars_2024-10-02:10:47:42-GMT-05:00     0B      -    24K  -
+Bp/a@syncoid_mars_2024-10-02:10:47:43-GMT-05:00     0B      -    24K  -
+C/a@syncoid_mars_2024-10-02:10:47:40-GMT-05:00     13K      -    24K  -
+C/a@syncoid_mars_2024-10-02:10:47:42-GMT-05:00      0B      -    24K  -
++ syncoid -r --keep-sync-snap Bp/a C/a
+Sending incremental Bp/a@syncoid_mars_2024-10-02:10:47:42-GMT-05:00 ... syncoid_mars_2024-10-02:10:47:44-GMT-05:00 (~ 4 KB):
+2.13KiB 0:00:00 [62.6KiB/s] [====================================================>                                               ] 53%            
++ zfs list -t snap -r A Bp C
+NAME                                              USED  AVAIL  REFER  MOUNTPOINT
+A/a@syncoid_mars_2024-10-02:10:47:40-GMT-05:00      0B      -    24K  -
+Bp/a@syncoid_mars_2024-10-02:10:47:40-GMT-05:00    13K      -    24K  -
+Bp/a@syncoid_mars_2024-10-02:10:47:42-GMT-05:00     0B      -    24K  -
+Bp/a@syncoid_mars_2024-10-02:10:47:43-GMT-05:00     0B      -    24K  -
+Bp/a@syncoid_mars_2024-10-02:10:47:44-GMT-05:00     0B      -    24K  -
+C/a@syncoid_mars_2024-10-02:10:47:40-GMT-05:00     13K      -    24K  -
+C/a@syncoid_mars_2024-10-02:10:47:42-GMT-05:00      0B      -    24K  -
+C/a@syncoid_mars_2024-10-02:10:47:43-GMT-05:00      0B      -    24K  -
+C/a@syncoid_mars_2024-10-02:10:47:44-GMT-05:00      0B      -    24K  -
++ syncoid -r --keep-sync-snap A/a Bp/a
+Sending incremental A/a@syncoid_mars_2024-10-02:10:47:40-GMT-05:00 ... syncoid_mars_2024-10-02:10:47:45-GMT-05:00 (~ 4 KB):
+1.52KiB 0:00:00 [50.0KiB/s] [=====================================>                                                              ] 38%            
++ sleep 1
 + syncoid -r Bp/a C/a
-Sending incremental Bp/a@syncoid_mars_2024-10-01:15:18:38-GMT-05:00 ... syncoid_mars_2024-10-01:15:18:41-GMT-05:00 (~ 4 KB):
-2.13KiB 0:00:00 [59.7KiB/s] [====================================================>                                               ] 53%            
-+ zfs list -t snap -r C
-NAME                                             USED  AVAIL  REFER  MOUNTPOINT
-C/a@syncoid_mars_2024-10-01:15:18:40-GMT-05:00     0B      -    24K  -
-C/a@syncoid_mars_2024-10-01:15:18:41-GMT-05:00     0B      -    24K  -
+Sending incremental Bp/a@syncoid_mars_2024-10-02:10:47:40-GMT-05:00 ... syncoid_mars_2024-10-02:10:47:46-GMT-05:00 (~ 4 KB):
+2.13KiB 0:00:00 [64.3KiB/s] [====================================================>                                               ] 53%            
+could not find any snapshots to destroy; check snapshot names.
+could not find any snapshots to destroy; check snapshot names.
+could not find any snapshots to destroy; check snapshot names.
+WARNING:  sudo zfs destroy 'C/a'@syncoid_mars_2024-10-02:10:47:43-GMT-05:00; sudo zfs destroy 'C/a'@syncoid_mars_2024-10-02:10:47:40-GMT-05:00; sudo zfs destroy 'C/a'@syncoid_mars_2024-10-02:10:47:44-GMT-05:00; sudo zfs destroy 'C/a'@syncoid_mars_2024-10-02:10:47:42-GMT-05:00 failed: 256 at /usr/sbin/syncoid line 1380.
++ sleep 1
 + cd /home/hbarta/Programming/Fun-with-ZFS/swap-pool
 + for i in A B Bp C
 + sudo zpool destroy -f A
@@ -114,5 +136,7 @@ C/a@syncoid_mars_2024-10-01:15:18:41-GMT-05:00     0B      -    24K  -
 + sudo zpool destroy -f C
 + rm fakedisk_C
 + sudo rm -r C
-hbarta@mars:~/Programming/Fun-with-ZFS/swap-pool $ 
+hbarta@mars:~/Programming/Fun-with-ZFS/swap-pool $
 ```
+
+No joy. Need to think about this some more and perhaps try a different strategy. Or perhaps `--keep-sync-snap` may help. Yes, it does.

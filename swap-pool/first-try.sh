@@ -46,18 +46,22 @@ cd "$starting_point"/A/a
 dd bs=1M seek=1 of=somefile count=0
 
 # populate normal backup stream
-syncoid -r A/a B/a ; sleep 1
-syncoid -r B/a C/a ; sleep 1
+syncoid -r  A/a B/a ; sleep 1
+syncoid -r --keep-sync-snap B/a C/a ; sleep 1
 
 # clone B to Bp
-syncoid -r B/a Bp/a ; sleep 1
+syncoid -r  B/a Bp/a ; sleep 1
 
 zfs list -t snap -r A B Bp C 
 
-# Can we now sync Bp to C
-syncoid -r Bp/a C/a
+# Can we now sync Bp to C ?
+syncoid -r --keep-sync-snap Bp/a C/a
 # Yes! Incremental backup succeeded.
-zfs list -t snap -r C 
+zfs list -t snap -r A Bp C 
+
+# And repeat the "backup chain" A -> Bp -> C
+syncoid -r --keep-sync-snap A/a Bp/a ; sleep 1
+syncoid -r Bp/a C/a ; sleep 1
 
 # cleanup
 cd "$starting_point"
