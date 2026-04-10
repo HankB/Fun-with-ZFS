@@ -21,7 +21,7 @@ The former seems harmless but mildly concerning. The latter results in that part
 
 It is possible that different hosts pulling from the same pool may be interfering with each others' snapshots. The initial effort will be to explore that possibility. Three file based pools will be created `A`, `B` and `C` and backups will be run from `A` to `B` andf `A` to `C`. Pool creation will be copied from `../chained-nested/chaining.sh` and put in `setup.sh` and cleanup, similarly copied, will be in `cleanup.sh`. It is anticipated that sevreral backup scenarios will be tested following setup and before the need to cleanup.
 
-## CLI testing
+## 2026-04-09 CLI testing
 
 Just try out some commands:
 
@@ -48,4 +48,48 @@ CRITICAL ERROR: Target B/A exists but has no snapshots matching with A!
 hbarta@olive:~/Programming/Fun-with-ZFS/syncoid-snapshots$ 
 ```
 
-That was surprisingly easy. Now encode that in a shell script and list snapshots as we go.
+That was surprisingly easy. Now encode that in a shell script and list snapshots as we go. (`test-0.sh`)
+
+## 2026-04-09 A partial solution
+
+Adding an identifier to the snapshot name (`--identifier=,EXTRA/`) disambiguates the snapshots between the two destinations but introduces a different problem. The snapshots for the "other" destination are also copied. The result can be seen after two runs of `test-01.sh`:
+
+```text
+hbarta@olive:~/Programming/Fun-with-ZFS/syncoid-snapshots$ ./test-0.sh 
+/sbin/syncoid version 2.2.0
+(Getopt::Long::GetOptions version 2.57, Perl version 5.40.1)
+
+Copy A to B/A
+A snapshots
+A@syncoid_A2C_olive_2026-04-09:20:42:58-GMT-05:00
+A@syncoid_A2B_olive_2026-04-09:20:43:02-GMT-05:00
+B snapshots
+B/A@syncoid_A2C_olive_2026-04-09:20:42:58-GMT-05:00
+B/A@syncoid_A2B_olive_2026-04-09:20:43:02-GMT-05:00
+
+Copy A to C/A
+
+A snapshots
+A@syncoid_A2B_olive_2026-04-09:20:43:02-GMT-05:00
+A@syncoid_A2C_olive_2026-04-09:20:43:03-GMT-05:00
+C snapshots
+C/A@syncoid_A2B_olive_2026-04-09:20:42:57-GMT-05:00
+C/A@syncoid_A2B_olive_2026-04-09:20:43:02-GMT-05:00
+C/A@syncoid_A2C_olive_2026-04-09:20:43:03-GMT-05:00
+
+Copy A to B/A
+A snapshots
+A@syncoid_A2C_olive_2026-04-09:20:43:03-GMT-05:00
+A@syncoid_A2B_olive_2026-04-09:20:43:05-GMT-05:00
+B snapshots
+B/A@syncoid_A2C_olive_2026-04-09:20:42:58-GMT-05:00
+B/A@syncoid_A2C_olive_2026-04-09:20:43:03-GMT-05:00
+B/A@syncoid_A2B_olive_2026-04-09:20:43:05-GMT-05:00
+hbarta@olive:~/Programming/Fun-with-ZFS/syncoid-snapshots$ 
+```
+
+Pool `B` includes `A2C` snapshots and `C` includes `A2B` snapshots.
+
+## 2026-04-09 A better solution
+
+`test-1.sh` adds the option `--no-stream` which causes the intermediate snapshots not to be copied to the destination and allows `syncoid` to manage only the snapshots it creates. I suppose a consequence of this is that other (`sanoid`) snapshots will not also be copied. If that is not desired, then a script could be written to delete any "foreign" `syncoid` snapshots, though I see potential issues with this with backup streams such as `A -> B -> C` or similar.

@@ -1,10 +1,6 @@
 #!/usr/bin/env bash
 
-# replicate A -> B/A and B -> C
-# Following initial replication, repeat the cycle uysing incremental send/recv
-
-# Modified to use `sudo` where required and `zfs allow`
-# so operations will be performed as a non-root user.
+# Try out different patterns that backup A to B and C
 
 # probably skip these if copy/past commands to shell
 set -o xtrace   # display commands as they are executed
