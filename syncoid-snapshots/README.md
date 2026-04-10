@@ -93,3 +93,7 @@ Pool `B` includes `A2C` snapshots and `C` includes `A2B` snapshots.
 ## 2026-04-09 A better solution
 
 `test-1.sh` adds the option `--no-stream` which causes the intermediate snapshots not to be copied to the destination and allows `syncoid` to manage only the snapshots it creates. I suppose a consequence of this is that other (`sanoid`) snapshots will not also be copied. If that is not desired, then a script could be written to delete any "foreign" `syncoid` snapshots, though I see potential issues with this with backup streams such as `A -> B -> C` or similar.
+
+## 2026-04-09 multiple hosts
+
+`A` on one host and `B` and `C` on other hosts, identified as `client` and `server`. The server setup and cleanup scripts take an argument to identify which pool(s) to create.
