@@ -10,7 +10,7 @@ set -o nounset  # bail if undeclared variable
 starting_point=$(pwd)
 user=$(whoami)
 
-for i in @A
+for i in $@
 do
     # create disk file to use as physical devices
     truncate -s 64MiB ./fakedisk_${i}
